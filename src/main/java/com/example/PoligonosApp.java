@@ -188,8 +188,25 @@ public class PoligonosApp extends Application {
         return pontosPoligonos.stream()
                 .map(pontos -> {
                     List<Point> pontosFechados = Stream.concat(pontos.stream(), Stream.of(pontos.get(0))).toList();
-
-                });
+                    return pontosFechados.stream()
+                            .reduce(
+                                    new double[]{0.0, 0.0, 0.0},
+                                    (acc, ponto) -> {
+                                        if (acc[0] == 0.0 && acc[1] == 0.0) {
+                                            acc[0] = ponto.x();
+                                            acc[1] = ponto.y();
+                                        } else {
+                                            double distancia = Math.hypot(ponto.x() - acc[0], ponto.y() - acc[1]);
+                                            acc[2] += distancia;
+                                            acc[0] = ponto.x();
+                                            acc[1] = ponto.y();
+                                        }
+                                        return acc;
+                                    },
+                                    (acc1, acc2) -> new double[]{0.0, 0.0, acc1[2] + acc2[2]}
+                            )[2];
+                })
+                .toList();
     }
 }
 
