@@ -133,7 +133,7 @@ public class PoligonosApp extends Application {
      */
     protected List<String> tipoPoligonos() {
         return pontosPoligonos.stream()
-                .map(List::size)
+                .flatMap(pontos -> Stream.of(pontos.size()))
                 .map(sides -> switch (sides) {
                     case 3 -> "Triângulo";
                     case 4 -> "Quadrilátero";
