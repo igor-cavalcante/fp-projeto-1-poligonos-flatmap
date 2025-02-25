@@ -9,9 +9,11 @@ import javafx.scene.shape.Polygon;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -185,28 +187,23 @@ public class PoligonosApp extends Application {
      * @return uma lista contendo o perímetro de cada polígono
      */
     protected List<Double> perimetros() {
-        return pontosPoligonos.stream()
-                .map(pontos -> {
-                    List<Point> pontosFechados = Stream.concat(pontos.stream(), Stream.of(pontos.get(0))).toList();
-                    return pontosFechados.stream()
-                            .reduce(
-                                    new double[]{0.0, 0.0, 0.0},
-                                    (acc, ponto) -> {
-                                        if (acc[0] == 0.0 && acc[1] == 0.0) {
-                                            acc[0] = ponto.x();
-                                            acc[1] = ponto.y();
-                                        } else {
-                                            double distancia = Math.hypot(ponto.x() - acc[0], ponto.y() - acc[1]);
-                                            acc[2] += distancia;
-                                            acc[0] = ponto.x();
-                                            acc[1] = ponto.y();
-                                        }
-                                        return acc;
-                                    },
-                                    (acc1, acc2) -> new double[]{0.0, 0.0, acc1[2] + acc2[2]}
-                            )[2];
-                })
-                .toList();
+            List<Double> perimetros = pontosPoligonos.stream()
+                    .flatMap(pontos -> {
+                        List<Point> pontosFechados = Stream.concat(pontos.stream(), Stream.of(pontos.get(0)))
+                                .collect(Collectors.toList());
+
+                        double perimetro = pontosFechados.stream()
+                                .reduce(
+                                        new Point(pontosFechados.get(pontosFechados.size() - 1), pontosFechados.get(0)),
+                                        (acc, ponto) -> new Point(acc, ponto)
+                                )
+                                .distance();  // Retorna o perímetro
+
+                        return Stream.of(perimetro);
+                    })
+                    .collect(Collectors.toList());
+
+            return Collections.unmodifiableList(perimetros);
     }
 }
 
